@@ -55,5 +55,5 @@ go run ./cmd/api
 
 ## Проверка (Windows)
 
-Запуск: `docker compose up --build`. БД с хоста: `localhost:5432`, логин/пароль/БД — `booking`. Таблицы `rooms`, `bookings` появляются после первого старта API.
+Запуск: `docker compose up --build`. БД с хоста: `localhost:5433`, логин/пароль/БД — `booking`. Таблицы `rooms`, `bookings` появляются после первого старта API.
 
