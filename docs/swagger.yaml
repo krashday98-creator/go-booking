@@ -1,0 +1,295 @@
+basePath: /
+definitions:
+  booking_internal_domain.Booking:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      room:
+        $ref: '#/definitions/booking_internal_domain.Room'
+      room_id:
+        type: string
+      status:
+        $ref: '#/definitions/booking_internal_domain.BookingStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  booking_internal_domain.BookingStatus:
+    enum:
+    - active
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - BookingStatusActive
+    - BookingStatusCancelled
+  booking_internal_domain.CreateBookingInput:
+    properties:
+      room_id:
+        type: string
+    required:
+    - room_id
+    type: object
+  booking_internal_domain.CreateRoomInput:
+    properties:
+      class:
+        type: string
+      cost:
+        type: number
+      description:
+        type: string
+    required:
+    - class
+    - cost
+    type: object
+  booking_internal_domain.Room:
+    properties:
+      class:
+        type: string
+      cost:
+        type: number
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  internal_handler.ErrorResponse:
+    properties:
+      error:
+        example: room not found
+        type: string
+    type: object
+  internal_handler.HealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  internal_handler.RoomListResponse:
+    properties:
+      rooms:
+        items:
+          $ref: '#/definitions/booking_internal_domain.Room'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API для управления комнатами и бронированиями.
+  title: Booking API
+  version: "1.0"
+paths:
+  /api/admin/rooms:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.RoomListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - AdminKey: []
+      summary: Список комнат
+      tags:
+      - admin-rooms
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные комнаты
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/booking_internal_domain.CreateRoomInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/booking_internal_domain.Room'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - AdminKey: []
+      summary: Создать комнату
+      tags:
+      - admin-rooms
+  /api/admin/rooms/{id}:
+    delete:
+      parameters:
+      - description: ID комнаты (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - AdminKey: []
+      summary: Удалить комнату
+      tags:
+      - admin-rooms
+    get:
+      parameters:
+      - description: ID комнаты (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/booking_internal_domain.Room'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - AdminKey: []
+      summary: Получить комнату
+      tags:
+      - admin-rooms
+  /api/bookings:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID комнаты
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/booking_internal_domain.CreateBookingInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/booking_internal_domain.Booking'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - UserID: []
+      summary: Забронировать комнату
+      tags:
+      - bookings
+  /api/bookings/{id}:
+    get:
+      parameters:
+      - description: ID бронирования (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/booking_internal_domain.Booking'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_handler.ErrorResponse'
+      security:
+      - UserID: []
+      summary: Получить бронирование
+      tags:
+      - bookings
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.HealthResponse'
+      summary: Health check
+      tags:
+      - system
+securityDefinitions:
+  AdminKey:
+    in: header
+    name: X-Admin-Key
+    type: apiKey
+  UserID:
+    in: header
+    name: X-User-ID
+    type: apiKey
+swagger: "2.0"

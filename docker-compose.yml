@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: booking-postgres
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+      POSTGRES_DB: booking
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking -d booking"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: booking-api
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://booking:booking@postgres:5432/booking?sslmode=disable
+      ADMIN_API_KEY: admin-secret-key
+      GIN_MODE: release
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
